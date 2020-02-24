@@ -1,5 +1,6 @@
 *
 !*.gitignore
 !./board_files/*
+!./vivado-lib/*
 !*/src/*
 !*.tcl
