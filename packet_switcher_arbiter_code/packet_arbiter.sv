@@ -144,7 +144,7 @@ module packet_arbiter (
 					port_a_start_transfer <= 1'b0;
 
 					// Wait until transfer form buffer is complete
-					if(port_a_ready_transfer) begin
+					if(port_a_ready_transfer && ~port_a_start_transfer) begin
 						port_a_schedule_state <= WAITING_FOR_SCHEDULE;
 						port_a_scheduled_buf <= 2'b00;
 					end
@@ -176,7 +176,7 @@ module packet_arbiter (
 					port_b_start_transfer <= 1'b0;
 
 					// Wait until transfer form buffer is complete
-					if(port_b_ready_transfer) begin
+					if(port_b_ready_transfer && ~port_b_start_transfer) begin
 						port_b_schedule_state <= WAITING_FOR_SCHEDULE;
 						port_b_scheduled_buf <= 2'b00;
 					end
@@ -208,7 +208,7 @@ module packet_arbiter (
 					port_c_start_transfer <= 1'b0;
 
 					// Wait until transfer form buffer is complete
-					if(port_c_ready_transfer) begin
+					if(port_c_ready_transfer && ~port_c_start_transfer) begin
 						port_c_schedule_state <= WAITING_FOR_SCHEDULE;
 						port_c_scheduled_buf <= 2'b00;
 					end
