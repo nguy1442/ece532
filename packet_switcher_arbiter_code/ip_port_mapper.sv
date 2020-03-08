@@ -27,7 +27,7 @@ module ip_port_mapper (
 				portb_sel = 1'b1;
 			end
 			PORTC_IP: begin
-				portb_sel = 1'b1;
+				portc_sel = 1'b1;
 			end
 			default: begin
 				porta_sel = 1'b0;
