@@ -11,7 +11,7 @@ module packet_arbiter_tb #(
     
     // Determines range of packet sizes in bytes
     parameter MIN_PACKET_LENG = 8,
-    parameter MAX_PACKET_LENG = 48,
+    parameter MAX_PACKET_LENG = 24,
     
     // Clock Period
     parameter CLK_P = 10
@@ -34,7 +34,18 @@ reg pmod_a_axis_tlast, pmod_b_axis_tlast, pmod_c_axis_tlast;
 reg pmod_a_axis_tvalid, pmod_b_axis_tvalid, pmod_c_axis_tvalid;
 
 /* Testbench Signals (internal) */
-// WIP
+
+// Error Flag
+bit error = 1'b0;
+
+// 3-bit counter to emulate the PMOD being ready once every 8 cycles
+reg [2:0] PMOD_cycle_count; 
+
+// Queues to hold packet markers in transit
+bit [7:0] out_queue_a[$], out_queue_b[$], out_queue_c[$];
+
+// Semaphores to allow shared usage of the testbench queues - WIP
+semaphore queue_sema;
 
 /* Helper Tasks for the Testbench */
 task genStimulus_a();
@@ -47,9 +58,9 @@ task genStimulus_a();
     end
 endtask
 
-// Waits between 1 and 10 clock cycles
+// Waits between 1 and 50 clock cycles
 task minorDelay();
-    integer delayCycles = $urandom_range(10, 1);
+    integer delayCycles = $urandom_range(50, 1);
     #(delayCycles * CLK_P);
 endtask
 
@@ -62,31 +73,30 @@ task genPacket_a(integer packetNum);
     buf_a_axis_tvalid <= 1'b1;
     meta_a_axis_tvalid <= 1'b1;
     originatorPort = 1; // 1 for Port A
-    destinationPort = ($urandom_range(1, 0) == 0) ? 2 : 3; // Route to B or C
-    if ($urandom_range(9, 0) == 9) destinationPort = 666; // 10% chance to route to an invalid location
+    destinationPort = ($urandom_range(1, 0) === 0) ? 2 : 3; // Route to B or C
+    if ($urandom_range(9, 0) === 9) destinationPort = 666; // 10% chance to route to an invalid location
     
     meta_a_axis_tdata <= 32'hc0a80109 + destinationPort;
-    
-    // For debugging, preface the first block in the packet data with...
-    //  The port encoding (the originator) - MSB 3 bits
-    //  The packet number - LSB 5 bits
-    buf_a_axis_tdata <= {originatorPort[2:0], packetNum[4:0]};
-    
-    $display("(%10d) - Sending Packet on Port 1 - Length: %6d Bytes, Destination: %2d", $time, packetSize, destinationPort);
+    $display("(%10d) - Sending Packet on Port 1 - Number: %d, Length: %6d Bytes, Destination: %2d", $time, packetNum, packetSize, destinationPort);
     
     // Send packet data byte-by-byte
-    for (i = 0; i < packetSize; i++) begin
-        integer data;
+    for (i = 0; i < packetSize; i++) begin  
         
-        if (i == packetSize - 1)
+        // RNG Data
+        buf_a_axis_tdata <= $urandom_range(255, 0);
+     
+        if (i === packetSize - 1) begin
             buf_a_axis_tlast <= 1'b1; // Last packet data
+            
+            // For debugging, preface the LAST block in the packet data with...
+            //  The port encoding (the originator) - MSB 3 bits
+            //  The packet number - LSB 5 bits
+            buf_a_axis_tdata <= {originatorPort[2:0], packetNum[4:0]};
+        end
         
         wait(buf_a_axis_tready); // Wait until arbitrator is ready
         @(posedge clk);
         #(CLK_P);
-        
-        // RNG Data
-        buf_a_axis_tdata <= $urandom_range(255, 0);
     end
     
     // Deassert signals at the end
@@ -132,6 +142,23 @@ always begin
     #(CLK_P / 2) clk = ~clk;
 end
 
+/* Generate PMOD ready signals */
+always @(posedge clk) begin
+    
+    pmod_a_axis_tready <= 1'b0;
+    pmod_b_axis_tready <= 1'b0;
+    pmod_c_axis_tready <= 1'b0;
+    
+    if (~resetn) PMOD_cycle_count <= 3'd0;
+    else PMOD_cycle_count <= PMOD_cycle_count + 3'd1;
+    
+    // Trigger ready signals for the PMODs
+    if (PMOD_cycle_count === 3'd2) pmod_a_axis_tready <= 1'b1;
+    if (PMOD_cycle_count === 3'd4) pmod_b_axis_tready <= 1'b1;
+    if (PMOD_cycle_count === 3'd6) pmod_c_axis_tready <= 1'b1;
+end
+
+
 /* Main code for the testbench */
 initial begin
     
@@ -151,11 +178,6 @@ initial begin
     buf_a_axis_tlast <= 1'b0;
     buf_b_axis_tlast <= 1'b0;
     buf_c_axis_tlast <= 1'b0;
-    
-    // Assume PMOD is always accepting input, TODO: Change?
-    pmod_a_axis_tready <= 1'b1;
-    pmod_b_axis_tready <= 1'b1;
-    pmod_c_axis_tready <= 1'b1;
     
     #(CLK_P);
     resetn = 1;
