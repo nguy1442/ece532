@@ -200,12 +200,12 @@ begin
        end
        if (counterValue == 5'b01) begin
            etherProtocolWr  = 1'b1;
-           etherProtocolSel = 1'b0;
+           etherProtocolSel = 1'b1;
        end
        else if (counterValue == 5'b00) begin
            nextState = ip_address_lookup_1;
            etherProtocolWr  = 1'b1;
-           etherProtocolSel = 1'b1;
+           etherProtocolSel = 1'b0;
        end
    end
    ip_address_lookup_1: begin              //Setup counter value based on packet type
@@ -230,20 +230,20 @@ begin
        end
        if (counterValue == 5'b011) begin
            desIpAddWr  = 1'b1;
-           desIpAddSel = 2'b00;
+           desIpAddSel = 2'b11;
        end
        else if (counterValue == 5'b010) begin
            desIpAddWr  = 1'b1;
-           desIpAddSel = 2'b01;
+           desIpAddSel = 2'b10;
        end
        else if (counterValue == 5'b001) begin
            desIpAddWr  = 1'b1;
-           desIpAddSel = 2'b10;
+           desIpAddSel = 2'b01;
        end
        else if (counterValue == 5'b000) begin
            nextState = update_meta_fifo;
            desIpAddWr  = 1'b1;
-           desIpAddSel = 2'b11;
+           desIpAddSel = 2'b00;
        end
    end
    update_meta_fifo: begin                 //Write to metadata FIFO the packet address

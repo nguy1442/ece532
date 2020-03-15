@@ -15,8 +15,8 @@ module port_controller (
 	
 	// AXI Stream to PMOD
     input s_axis_tready,
-    output reg [31:0] s_axis_tdata,
-    output reg s_axis_tlast,
+    output wire [31:0] s_axis_tdata,
+    output wire s_axis_tlast,
     output reg s_axis_tvalid,
 
 	// Arbiter handshake signals
@@ -38,8 +38,8 @@ module port_controller (
 		if(~resetn) begin
 			pmod_port_state <= IDLE;
 
-			s_axis_tdata <= 32'd0;
-			s_axis_tlast <= 1'b0;
+			//s_axis_tdata <= 32'd0;
+			//s_axis_tlast <= 1'b0;
 			s_axis_tvalid <= 1'b0;
 
 			meta_axis_tready <= 1'b0;
@@ -55,8 +55,8 @@ module port_controller (
 					if(start_transfer) begin
 						// Let the PMOD know that we want to write to it
 						s_axis_tvalid <= 1'b1;
-						s_axis_tdata[7:0] <= buf_axis_tdata;
-						s_axis_tlast <= buf_axis_tlast;
+						//s_axis_tdata[7:0] <= buf_axis_tdata;
+						//s_axis_tlast <= buf_axis_tlast;
 
 						pmod_port_state <= WRITING;
 						ready_transfer <= 1'b0;
@@ -66,8 +66,8 @@ module port_controller (
 					// PMOD ready for more data
 					if(s_axis_tready) begin
 						//s_axis_tvalid <= 1'b1;
-						s_axis_tdata[7:0] <= buf_axis_tdata;
-						s_axis_tlast <= buf_axis_tlast;
+						//s_axis_tdata[7:0] <= buf_axis_tdata;
+						//s_axis_tlast <= buf_axis_tlast;
 
 						if(buf_axis_tlast) begin
 							pmod_port_state <= IDLE;
@@ -82,4 +82,7 @@ module port_controller (
 			endcase
 		end
 	end
+	
+	assign s_axis_tlast = buf_axis_tlast;
+	assign s_axis_tdata = {24'd0, buf_axis_tdata};
 endmodule

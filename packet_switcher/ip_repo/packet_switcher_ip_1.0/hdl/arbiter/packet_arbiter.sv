@@ -100,17 +100,17 @@ module packet_arbiter (
 	reg port_a_start_transfer, port_b_start_transfer, port_c_start_transfer;
 	wire port_a_ready_transfer, port_b_ready_transfer, port_c_ready_transfer;
 	
-	assign pmod_port_a_ready_a = buf_a_axis_tvalid & buf_a_porta_sel;
+	assign pmod_port_a_ready_a = buf_a_axis_tvalid & buf_a_porta_sel; // BUG fix: prevent replay packets
 	assign pmod_port_a_ready_b = buf_b_axis_tvalid & buf_b_porta_sel;
 	assign pmod_port_a_ready_c = buf_c_axis_tvalid & buf_c_porta_sel;
 	
 	assign pmod_port_b_ready_a = buf_a_axis_tvalid & buf_a_portb_sel;
-	assign pmod_port_b_ready_b = buf_b_axis_tvalid & buf_b_portb_sel;
+	assign pmod_port_b_ready_b = buf_b_axis_tvalid & buf_b_portb_sel; // BUG fix: prevent replay packets
 	assign pmod_port_b_ready_c = buf_c_axis_tvalid & buf_c_portb_sel;
 	
 	assign pmod_port_c_ready_a = buf_a_axis_tvalid & buf_a_portc_sel;
 	assign pmod_port_c_ready_b = buf_b_axis_tvalid & buf_b_portc_sel;
-	assign pmod_port_c_ready_c = buf_c_axis_tvalid & buf_c_portc_sel;
+	assign pmod_port_c_ready_c = buf_c_axis_tvalid & buf_c_portc_sel; // BUG fix: prevent replay packets
 	
 	enum {
 		WAITING_FOR_SCHEDULE,
@@ -132,7 +132,7 @@ module packet_arbiter (
 			case(port_a_schedule_state)
 				WAITING_FOR_SCHEDULE: begin
 					// There is a packet ready for transmission
-					if((pmod_port_a_ready_a | pmod_port_a_ready_b | pmod_port_a_ready_c) & port_a_ready_transfer) begin
+					if((pmod_port_a_ready_b | pmod_port_a_ready_c) & port_a_ready_transfer & ~pmod_port_a_ready_a) begin // BUG fix: prevent replay packets
 						port_a_start_transfer <= 1'b1;
 						port_a_schedule_state <= SCHEDULED;
 
@@ -164,7 +164,7 @@ module packet_arbiter (
 			case(port_b_schedule_state)
 				WAITING_FOR_SCHEDULE: begin
 					// There is a packet ready for transmission
-					if((pmod_port_b_ready_a | pmod_port_b_ready_b | pmod_port_b_ready_c) & port_b_ready_transfer) begin
+					if((pmod_port_b_ready_a | pmod_port_b_ready_c) & port_b_ready_transfer & ~pmod_port_b_ready_b) begin // BUG fix: prevent replay packets
 						port_b_start_transfer <= 1'b1;
 						port_b_schedule_state <= SCHEDULED;
 
@@ -196,7 +196,7 @@ module packet_arbiter (
 			case(port_c_schedule_state)
 				WAITING_FOR_SCHEDULE: begin
 					// There is a packet ready for transmission
-					if((pmod_port_c_ready_a | pmod_port_c_ready_b | pmod_port_c_ready_c) & port_c_ready_transfer) begin
+					if((pmod_port_c_ready_a | pmod_port_c_ready_b) & port_c_ready_transfer & ~pmod_port_c_ready_c) begin // BUG fix: prevent replay packets
 						port_c_start_transfer <= 1'b1;
 						port_c_schedule_state <= SCHEDULED;
 
@@ -241,7 +241,7 @@ module packet_arbiter (
 					buf_a_axis_tready_invalid <= 1'b0;
 					meta_a_axis_tready_invalid <= 1'b0;
 				
-					if(buf_a_invalid_ip & buf_a_axis_tvalid) begin
+					if((buf_a_invalid_ip & buf_a_axis_tvalid) | pmod_port_a_ready_a) begin // BUG fix: prevent replay packets
 						buf_a_dropped_packet_count <= buf_a_dropped_packet_count + 1;
 						buf_a_consume_invalid_ip_state <= CONSUME_INVALID_IP;
 					end
@@ -249,7 +249,7 @@ module packet_arbiter (
 				CONSUME_INVALID_IP: begin
 					buf_a_axis_tready_invalid <= 1'b1;
 				
-					if(buf_a_axis_tlast) begin
+					if(buf_a_axis_tvalid & buf_a_axis_tlast) begin
 						meta_a_axis_tready_invalid <= 1'b1;
 						buf_a_consume_invalid_ip_state <= WAITING_FOR_INVALID_IP;
 					end
@@ -273,7 +273,7 @@ module packet_arbiter (
 					buf_b_axis_tready_invalid <= 1'b0;
 					meta_b_axis_tready_invalid <= 1'b0;
 
-					if(buf_b_invalid_ip & buf_b_axis_tvalid) begin
+					if((buf_b_invalid_ip & buf_b_axis_tvalid) | pmod_port_b_ready_b) begin // BUG fix: prevent replay packets
 						buf_b_dropped_packet_count <= buf_b_dropped_packet_count + 1;
 						buf_b_consume_invalid_ip_state <= CONSUME_INVALID_IP;
 					end
@@ -281,7 +281,7 @@ module packet_arbiter (
 				CONSUME_INVALID_IP: begin
 					buf_b_axis_tready_invalid <= 1'b1;
 				
-					if(buf_b_axis_tlast) begin
+					if(buf_b_axis_tvalid & buf_b_axis_tlast) begin
 						meta_b_axis_tready_invalid <= 1'b1;
 						buf_b_consume_invalid_ip_state <= WAITING_FOR_INVALID_IP;
 					end
@@ -305,7 +305,7 @@ module packet_arbiter (
 					buf_c_axis_tready_invalid <= 1'b0;
 					meta_c_axis_tready_invalid <= 1'b0;
 
-					if(buf_c_invalid_ip & buf_c_axis_tvalid) begin
+					if((buf_c_invalid_ip & buf_c_axis_tvalid) | pmod_port_c_ready_c) begin // BUG fix: prevent replay packets
 						buf_c_dropped_packet_count <= buf_c_dropped_packet_count + 1;
 						buf_c_consume_invalid_ip_state <= CONSUME_INVALID_IP;
 					end
@@ -313,7 +313,7 @@ module packet_arbiter (
 				CONSUME_INVALID_IP: begin
 					buf_c_axis_tready_invalid <= 1'b1;
 				
-					if(buf_c_axis_tlast) begin
+					if(buf_c_axis_tvalid & buf_c_axis_tlast) begin
 						meta_c_axis_tready_invalid <= 1'b1;
 						buf_c_consume_invalid_ip_state <= WAITING_FOR_INVALID_IP;
 					end
@@ -446,7 +446,7 @@ module packet_arbiter (
 	
 	// buf a port mux
 	always @(*) begin
-		if(buf_a_invalid_ip) begin
+		if(buf_a_invalid_ip | buf_a_porta_sel) begin // BUG fix: prevent replay packets
 			buf_a_axis_tready = buf_a_axis_tready_invalid;
 			meta_a_axis_tready = meta_a_axis_tready_invalid;
 		end
@@ -471,7 +471,7 @@ module packet_arbiter (
 	
 	// buf b port mux
 	always @(*) begin
-		if(buf_b_invalid_ip) begin
+		if(buf_b_invalid_ip | buf_b_portb_sel) begin // BUG fix: prevent replay packets
 			buf_b_axis_tready = buf_b_axis_tready_invalid;
 			meta_b_axis_tready = meta_b_axis_tready_invalid;
 		end
@@ -496,7 +496,7 @@ module packet_arbiter (
 	
 	// buf c port mux
 	always @(*) begin
-		if(buf_c_invalid_ip) begin
+		if(buf_c_invalid_ip | buf_c_portc_sel) begin // BUG fix: prevent replay packets
 			buf_c_axis_tready = buf_c_axis_tready_invalid;
 			meta_c_axis_tready = meta_c_axis_tready_invalid;
 		end
