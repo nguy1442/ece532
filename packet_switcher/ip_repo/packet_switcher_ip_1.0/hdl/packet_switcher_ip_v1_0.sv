@@ -79,6 +79,15 @@ module packet_switcher_ip_v1_0 #(
     wire meta_c_axis_tvalid, meta_c_axis_tready;
     wire [31:0] meta_c_axis_tdata;
     
+    //counters output wires
+    wire [31:0] packet_received_count_a;
+    wire [31:0] packet_received_count_b;
+    wire [31:0] packet_received_count_c;
+    
+    wire [31:0] packet_droped_count_a;
+    wire [31:0] packet_droped_count_b;
+    wire [31:0] packet_droped_count_c;
+    
 	// AXI4LITE signals
     reg [CONFIG_AXI_S_ADDR_WIDTH-1 : 0]     axi_awaddr;
     reg      axi_awready;
@@ -246,9 +255,9 @@ module packet_switcher_ip_v1_0 #(
     begin
       if ( resetn == 1'b0 )
         begin
-          slv_reg0 <= 0;
-          slv_reg1 <= 0;
-          slv_reg2 <= 0;
+          slv_reg0 <= 32'hc0a8010a; //192.168.1.10
+          slv_reg1 <= 32'hc0a8010b; //192.168.1.11
+          slv_reg2 <= 32'hc0a8010c; //192.168.1.12
           slv_reg3 <= 0;
           slv_reg4 <= 0;
           slv_reg5 <= 0;
@@ -512,13 +521,13 @@ module packet_switcher_ip_v1_0 #(
                           slv_reg1 <= slv_reg1;
                           slv_reg2 <= slv_reg2;
                           slv_reg3 <= slv_reg3;
-                          slv_reg4 <= slv_reg4;
-                          slv_reg5 <= slv_reg5;
-                          slv_reg6 <= slv_reg6;
+                          slv_reg4 <= packet_received_count_a;
+                          slv_reg5 <= packet_received_count_b;
+                          slv_reg6 <= packet_received_count_b;
                           slv_reg7 <= slv_reg7;
-                          slv_reg8 <= slv_reg8;
-                          slv_reg9 <= slv_reg9;
-                          slv_reg10 <= slv_reg10;
+                          slv_reg8 <= packet_droped_count_a;
+                          slv_reg9 <= packet_droped_count_b;
+                          slv_reg10 <= packet_droped_count_c;
                           slv_reg11 <= slv_reg11;
                           slv_reg12 <= slv_reg12;
                           slv_reg13 <= slv_reg13;
@@ -721,7 +730,9 @@ module packet_switcher_ip_v1_0 #(
        
        .meta_axis_tvalid(meta_a_axis_tvalid),
        .meta_axis_tdata(meta_a_axis_tdata),
-       .meta_axis_tready(meta_a_axis_tready)
+       .meta_axis_tready(meta_a_axis_tready),
+       
+       .packet_received_count(packet_received_count_a)
     );
     
     input_queue port_b_bufs (
@@ -740,7 +751,9 @@ module packet_switcher_ip_v1_0 #(
        
        .meta_axis_tvalid(meta_b_axis_tvalid),
        .meta_axis_tdata(meta_b_axis_tdata),
-       .meta_axis_tready(meta_b_axis_tready)
+       .meta_axis_tready(meta_b_axis_tready),
+              
+       .packet_received_count(packet_received_count_b)
     );
     
     input_queue port_c_bufs (
@@ -759,7 +772,9 @@ module packet_switcher_ip_v1_0 #(
        
        .meta_axis_tvalid(meta_c_axis_tvalid),
        .meta_axis_tdata(meta_c_axis_tdata),
-       .meta_axis_tready(meta_c_axis_tready)
+       .meta_axis_tready(meta_c_axis_tready),
+              
+       .packet_received_count(packet_received_count_c)
     );
     
     // Packet Arbiter instance
@@ -808,6 +823,14 @@ module packet_switcher_ip_v1_0 #(
         .pmod_c_axis_tready(pmod_c_axis_m_tready),
         .pmod_c_axis_tdata(pmod_c_axis_m_tdata),
         .pmod_c_axis_tlast(pmod_c_axis_m_tlast),
-        .pmod_c_axis_tvalid(pmod_c_axis_m_tvalid)
+        .pmod_c_axis_tvalid(pmod_c_axis_m_tvalid),
+        
+        .port_a_IP(slv_reg0),
+        .port_b_IP(slv_reg1),
+        .port_c_IP(slv_reg2),
+        
+        .packet_droped_count_a(packet_droped_count_a),
+        .packet_droped_count_b(packet_droped_count_b),
+        .packet_droped_count_c(packet_droped_count_c)
     );
 endmodule

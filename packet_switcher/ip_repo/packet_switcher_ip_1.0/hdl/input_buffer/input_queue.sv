@@ -26,7 +26,10 @@ module input_queue(
    // Ports of Axi Master Bus Interface meta_AXIS (output of meta queue)
    output wire  meta_axis_tvalid,
    output wire [31:0] meta_axis_tdata,
-   input wire  meta_axis_tready
+   input wire  meta_axis_tready,
+   
+   //Remote access ports
+   output wire [31:0] packet_received_count
 );
 
 //Instantiate data and meta queues 
@@ -106,6 +109,7 @@ reg invalidProto;
 //packet counter
 reg [31:0] packetCount;
 reg packetCountEnc;
+assign packet_received_count = packetCount;
 
 //
 wire transmission;

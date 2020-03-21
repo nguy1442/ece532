@@ -53,12 +53,24 @@ module packet_arbiter (
     input pmod_c_axis_tready,
     output wire [31:0] pmod_c_axis_tdata,
     output wire pmod_c_axis_tlast,
-    output wire pmod_c_axis_tvalid
+    output wire pmod_c_axis_tvalid,
+    
+    //Remote access ports
+    input wire [31:0] port_a_IP,
+    input wire [31:0] port_b_IP,
+    input wire [31:0] port_c_IP,
+    
+    output wire [31:0] packet_droped_count_a,
+    output wire [31:0] packet_droped_count_b,
+    output wire [31:0] packet_droped_count_c
 );
 
-	reg [29:0] buf_a_dropped_packet_count, buf_b_dropped_packet_count, buf_c_dropped_packet_count;
-	reg [31:0] total_dropped_packet_count;
-	assign total_dropped_packet_count = buf_a_dropped_packet_count + buf_b_dropped_packet_count + buf_c_dropped_packet_count;
+	reg [31:0] buf_a_dropped_packet_count, buf_b_dropped_packet_count, buf_c_dropped_packet_count;
+	assign packet_droped_count_a = buf_a_dropped_packet_count;
+	assign packet_droped_count_b = buf_b_dropped_packet_count;
+	assign packet_droped_count_c = buf_c_dropped_packet_count;
+	//reg [31:0] total_dropped_packet_count;
+	//assign total_dropped_packet_count = buf_a_dropped_packet_count + buf_b_dropped_packet_count + buf_c_dropped_packet_count;
 	
 	wire buf_a_porta_sel, buf_a_portb_sel, buf_a_portc_sel;
 	wire buf_b_porta_sel, buf_b_portb_sel, buf_b_portc_sel;
@@ -532,7 +544,11 @@ module packet_arbiter (
 		.portb_sel(buf_a_portb_sel),
 		.portc_sel(buf_a_portc_sel),
 		
-		.invalid_ip(buf_a_invalid_ip)
+		.invalid_ip(buf_a_invalid_ip),
+		
+		.port_a_IP(port_a_IP),
+        .port_b_IP(port_b_IP),
+        .port_c_IP(port_c_IP)
 	);
 
 	ip_port_mapper buff_b_ip (
@@ -542,7 +558,11 @@ module packet_arbiter (
 		.portb_sel(buf_b_portb_sel),
 		.portc_sel(buf_b_portc_sel),
 		
-		.invalid_ip(buf_b_invalid_ip)
+		.invalid_ip(buf_b_invalid_ip),
+		
+		.port_a_IP(port_a_IP),
+        .port_b_IP(port_b_IP),
+        .port_c_IP(port_c_IP)
 	);
 
 	ip_port_mapper buff_c_ip (
@@ -552,7 +572,11 @@ module packet_arbiter (
 		.portb_sel(buf_c_portb_sel),
 		.portc_sel(buf_c_portc_sel),
 		
-		.invalid_ip(buf_c_invalid_ip)
+		.invalid_ip(buf_c_invalid_ip),
+		
+		.port_a_IP(port_a_IP),
+        .port_b_IP(port_b_IP),
+        .port_c_IP(port_c_IP)
 	);
 
 	/////////////////////////////////////////////////////////////////
