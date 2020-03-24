@@ -289,6 +289,14 @@ module packet_switcher_ip_v1_0 #(
           slv_reg31 <= 0;
         end 
       else begin
+        slv_reg4 <= packet_received_count_a;
+        slv_reg5 <= packet_received_count_b;
+        slv_reg6 <= packet_received_count_c;
+
+        slv_reg8 <= packet_droped_count_a;
+        slv_reg9 <= packet_droped_count_b;
+        slv_reg10 <= packet_droped_count_c;
+
         if (slv_reg_wren)
           begin
             case ( axi_awaddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
@@ -325,21 +333,21 @@ module packet_switcher_ip_v1_0 #(
                   if ( config_axi_s_wstrb[byte_index] == 1 ) begin
                     // Respective byte enables are asserted as per write strobes 
                     // Slave register 4
-                    slv_reg4[(byte_index*8) +: 8] <= config_axi_s_wdata[(byte_index*8) +: 8];
+                    //slv_reg4[(byte_index*8) +: 8] <= config_axi_s_wdata[(byte_index*8) +: 8];
                   end  
               5'h05:
                 for ( byte_index = 0; byte_index <= (CONFIG_AXI_S_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
                   if ( config_axi_s_wstrb[byte_index] == 1 ) begin
                     // Respective byte enables are asserted as per write strobes 
                     // Slave register 5
-                    slv_reg5[(byte_index*8) +: 8] <= config_axi_s_wdata[(byte_index*8) +: 8];
+                    //slv_reg5[(byte_index*8) +: 8] <= config_axi_s_wdata[(byte_index*8) +: 8];
                   end  
               5'h06:
                 for ( byte_index = 0; byte_index <= (CONFIG_AXI_S_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
                   if ( config_axi_s_wstrb[byte_index] == 1 ) begin
                     // Respective byte enables are asserted as per write strobes 
                     // Slave register 6
-                    slv_reg6[(byte_index*8) +: 8] <= config_axi_s_wdata[(byte_index*8) +: 8];
+                    //slv_reg6[(byte_index*8) +: 8] <= config_axi_s_wdata[(byte_index*8) +: 8];
                   end  
               5'h07:
                 for ( byte_index = 0; byte_index <= (CONFIG_AXI_S_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
@@ -353,21 +361,21 @@ module packet_switcher_ip_v1_0 #(
                   if ( config_axi_s_wstrb[byte_index] == 1 ) begin
                     // Respective byte enables are asserted as per write strobes 
                     // Slave register 8
-                    slv_reg8[(byte_index*8) +: 8] <= config_axi_s_wdata[(byte_index*8) +: 8];
+                    //slv_reg8[(byte_index*8) +: 8] <= config_axi_s_wdata[(byte_index*8) +: 8];
                   end  
               5'h09:
                 for ( byte_index = 0; byte_index <= (CONFIG_AXI_S_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
                   if ( config_axi_s_wstrb[byte_index] == 1 ) begin
                     // Respective byte enables are asserted as per write strobes 
                     // Slave register 9
-                    slv_reg9[(byte_index*8) +: 8] <= config_axi_s_wdata[(byte_index*8) +: 8];
+                    //slv_reg9[(byte_index*8) +: 8] <= config_axi_s_wdata[(byte_index*8) +: 8];
                   end  
               5'h0A:
                 for ( byte_index = 0; byte_index <= (CONFIG_AXI_S_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
                   if ( config_axi_s_wstrb[byte_index] == 1 ) begin
                     // Respective byte enables are asserted as per write strobes 
                     // Slave register 10
-                    slv_reg10[(byte_index*8) +: 8] <= config_axi_s_wdata[(byte_index*8) +: 8];
+                    //slv_reg10[(byte_index*8) +: 8] <= config_axi_s_wdata[(byte_index*8) +: 8];
                   end  
               5'h0B:
                 for ( byte_index = 0; byte_index <= (CONFIG_AXI_S_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
@@ -517,39 +525,35 @@ module packet_switcher_ip_v1_0 #(
                     slv_reg31[(byte_index*8) +: 8] <= config_axi_s_wdata[(byte_index*8) +: 8];
                   end
               default : begin
-                          slv_reg0 <= slv_reg0;
-                          slv_reg1 <= slv_reg1;
-                          slv_reg2 <= slv_reg2;
-                          slv_reg3 <= slv_reg3;
-                          slv_reg4 <= packet_received_count_a;
-                          slv_reg5 <= packet_received_count_b;
-                          slv_reg6 <= packet_received_count_b;
-                          slv_reg7 <= slv_reg7;
-                          slv_reg8 <= packet_droped_count_a;
-                          slv_reg9 <= packet_droped_count_b;
-                          slv_reg10 <= packet_droped_count_c;
-                          slv_reg11 <= slv_reg11;
-                          slv_reg12 <= slv_reg12;
-                          slv_reg13 <= slv_reg13;
-                          slv_reg14 <= slv_reg14;
-                          slv_reg15 <= slv_reg15;
-                          slv_reg16 <= slv_reg16;
-                          slv_reg17 <= slv_reg17;
-                          slv_reg18 <= slv_reg18;
-                          slv_reg19 <= slv_reg19;
-                          slv_reg20 <= slv_reg20;
-                          slv_reg21 <= slv_reg21;
-                          slv_reg22 <= slv_reg22;
-                          slv_reg23 <= slv_reg23;
-                          slv_reg24 <= slv_reg24;
-                          slv_reg25 <= slv_reg25;
-                          slv_reg26 <= slv_reg26;
-                          slv_reg27 <= slv_reg27;
-                          slv_reg28 <= slv_reg28;
-                          slv_reg29 <= slv_reg29;
-                          slv_reg30 <= slv_reg30;
-                          slv_reg31 <= slv_reg31;
-                        end
+		    	 slv_reg0 <= slv_reg0;
+                 slv_reg1 <= slv_reg1;
+                 slv_reg2 <= slv_reg2;
+                 slv_reg3 <= slv_reg3;
+
+                 slv_reg7 <= slv_reg7;
+
+                 slv_reg11 <= slv_reg11;
+                 slv_reg12 <= slv_reg12;
+                 slv_reg13 <= slv_reg13;
+                 slv_reg14 <= slv_reg14;
+                 slv_reg15 <= slv_reg15;
+                 slv_reg16 <= slv_reg16;
+                 slv_reg17 <= slv_reg17;
+                 slv_reg18 <= slv_reg18;
+                 slv_reg19 <= slv_reg19;
+                 slv_reg20 <= slv_reg20;
+                 slv_reg21 <= slv_reg21;
+                 slv_reg22 <= slv_reg22;
+                 slv_reg23 <= slv_reg23;
+                 slv_reg24 <= slv_reg24;
+                 slv_reg25 <= slv_reg25;
+                 slv_reg26 <= slv_reg26;
+                 slv_reg27 <= slv_reg27;
+                 slv_reg28 <= slv_reg28;
+                 slv_reg29 <= slv_reg29;
+                 slv_reg30 <= slv_reg30;
+                 slv_reg31 <= slv_reg31;
+			  end
             endcase
           end
       end
