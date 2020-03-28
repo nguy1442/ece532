@@ -40,7 +40,7 @@
 #define PMODESP32_GPIO_BASEADDR XPAR_PMODESP32_0_AXI_LITE_GPIO_BASEADDR
 
 // Wait time to allow some leeway for the PMOD to send its response to a command
-#define UART_DELAY 50000
+#define UART_DELAY 10000
 
 // Buffer length
 #define UART_BUFF_LEN 256
@@ -310,7 +310,7 @@ void configureESP32() {
 		sendCommandAT("\r\n");
 
 		// Flush UART for a longer time for the ping to finish
-		if (flushUART(20)) {
+		if (flushUART(100)) {
 			xil_printf("\r\nUDP connection failed, retrying...\r\n");
 			pollDone = 0;
 			sendCommandATandFlushRX("AT+CIPCLOSE\r\n"); // Force-close connection
