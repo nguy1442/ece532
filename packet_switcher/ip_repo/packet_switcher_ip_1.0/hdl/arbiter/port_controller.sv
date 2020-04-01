@@ -31,7 +31,7 @@ module port_controller (
 		WRITING
 	} pmod_port_state;
 
-	assign buf_axis_tready = s_axis_tready;
+	assign buf_axis_tready = s_axis_tready & s_axis_tvalid;
 
 	// State machine for PMOD port
 	always @(posedge clk) begin
@@ -76,6 +76,8 @@ module port_controller (
 							meta_axis_tready <= 1'b1;
 							
 							ready_transfer <= 1'b1;
+							
+							s_axis_tvalid <= 1'b0;
 						end
 					end
 				end
@@ -83,6 +85,6 @@ module port_controller (
 		end
 	end
 	
-	assign s_axis_tlast = buf_axis_tlast;
+	assign s_axis_tlast = buf_axis_tlast & (pmod_port_state == WRITING);
 	assign s_axis_tdata = {24'd0, buf_axis_tdata};
 endmodule
