@@ -1,2 +1,0 @@
-source demo_proj.tcl
-source demo_block_design.tcl
