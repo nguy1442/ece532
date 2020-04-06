@@ -17,4 +17,4 @@ Outline of repo:
 - pmods/
   - Contains the Digilent provided IPs to communicate with the ESP32 Wi-Fi PMOD
 - testbenches/
-  -Contains testbenches used to simulate the input_queue and arbitrator modules from the Packer Switcher Custom IP
+  - Contains testbenches used to simulate the input_queue and arbitrator modules from the Packer Switcher Custom IP
