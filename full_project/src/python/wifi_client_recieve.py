@@ -1,7 +1,7 @@
 import socket
 
 UDP_IP = "192.168.4.2"
-UDP_PORT = 2233
+UDP_PORT = 3030
 
 print("PMOD IP:", UDP_IP)
 print("PMOD port:", UDP_PORT)

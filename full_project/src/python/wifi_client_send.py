@@ -1,9 +1,7 @@
 import socket
-from random import seed
-from random import randint
 
 #PMOD address and port
-UDP_IP = "127.0.0.1"
+UDP_IP = "192.168.4.1"
 UDP_PORT = 2233
 print("PMOD IP:", UDP_IP)
 print("PMOD port:", UDP_PORT)
@@ -36,18 +34,13 @@ while True:
     length = len(message)
     if length < 18:
         fillSize = 18 - length
-        #length = 18
+    else:
+        fillSize = 0
 
     #Construct UDP packet
     etherHeader = B'\xFF\xFF\xFF\xFF\xFF\xFF' + macBytes +  B'\x08\x00'
 
-	seed()
-	value = randint(1, 65535)
-    ipHeader = B'\x45\x00' + bytes.fromhex(format(28 + length, '04x')) + bytes([randint(0, 255), randint(0, 255)]) + B'\x00\x00\x80\x11\x00\x00' + DEVICE_IP + desIpBytes
-
-	for i in range(8):
-		
-
+    ipHeader = B'\x45\x00' + bytes.fromhex(format(28 + length, '04x')) + B'\x00\x00\x40\x00\x80\x11\x00\x00' + DEVICE_IP + desIpBytes
 
     udpHeader = DEVICE_PORT + bytes.fromhex(format(int(port), '04x')) + bytes.fromhex(format(8 + length, '04x')) + B'\x00\x00'
 
@@ -57,5 +50,4 @@ while True:
 
     #send UDP packet
     print(''.join('\\x' + format(x, '02x') for x in packet))
-	input();
     sock.sendto(packet, (UDP_IP, UDP_PORT))
